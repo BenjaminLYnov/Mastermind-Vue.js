@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="vue.js"></script>
+  <head>
+    <!-- head definitions go here -->
+  </head>
+  <body>
+    <div id="app">
+      <div>
+        <h1>Choix de la combinaison : Cliquez 4 fois sur une couleur</h1>
+        <div id="combinaison" v-for="color in colors">
+          <div
+            v-on:click="clickCombinaison(color)"
+            v-bind:style="{ backgroundColor: color }"
+          ></div>
+        </div>
+      </div>
+      <div v-if="gameStarted">
+        <p>Tour {{tour["numTour"]}}</p>
+      </div>
+      <div v-if="showMyCombinaison">
+        <h1 style="display: inline-block;">Ma combinaison secrète :</h1>
+        <div id="combinaison" v-for="color in maCombinaison">
+          <div v-bind:style="{ backgroundColor: color }"></div>
+        </div>
+      </div>
+      <div v-if="isReady">
+        <button v-on:click="start()">Commencer la partie</button>
+      </div>
+      <div
+        style="display: block; margin-bottom: 2vh;"
+        v-for="i in (tour['numTour'])"
+      >
+        <div style="display: inline-block; width: 30vh">
+          <div
+            id="checking"
+            v-for="wrong in tour['wrong'][i-1]"
+            style="display: inline-block;"
+          >
+            <div style="display: inline-block; background-color: Red;"></div>
+          </div>
+        </div>
+        <div
+          id="combinaison"
+          v-for="color in tour['color'][i-1]"
+          style="display: inline-block;"
+        >
+          <div
+            style="display: inline-block;"
+            v-bind:style="{ backgroundColor: color }"
+          ></div>
+        </div>
+        <div style="display: inline-block; margin-left: 5vh; width: 30vh">
+          <div
+            id="checking"
+            v-for="good in tour['good'][i-1]"
+            style="display: inline-block;"
+          >
+            <div style="display: inline-block; background-color: green;"></div>
+          </div>
+        </div>
+      </div>
+      <div v-if="winned">
+        <p>Bravo vous avez trouvez !</p>
+      </div>
+    </div>
+  </body>
+  <style>
+    #combinaison {
+      display: inline-block;
+      margin-left: 1vh;
+    }
+
+    #combinaison div {
+      display: inline-block;
+      vertical-align: top;
+      width: 5vh;
+      height: 5vh;
+      border-radius: 50vh;
+    }
+    #checking div {
+      display: inline-block;
+      vertical-align: top;
+      width: 5vh;
+      height: 5vh;
+      margin-right: 1vh;
+    }
+  </style>
+  <script>
+    var app = new Vue({
+      el: "#app",
+      data: {
+        colors: [
+          "red",
+          "blue",
+          "green",
+          "yellow",
+          "rgb(35, 179, 171)",
+          "rgb(148, 21, 180)",
+        ],
+        maCombinaison: [],
+        counter: 0,
+        showMyCombinaison: true,
+        isReady: false,
+        gameStarted: false,
+        winned: false,
+        tour: {
+          numTour: 1,
+          color: [],
+          good: [],
+          wrong: [],
+        },
+      },
+      methods: {
+        clickCombinaison: function (color) {
+          if (!this.winned) {
+            if (!this.gameStarted && this.counter < 4) {
+              if (this.counter < 4) {
+                this.counter++;
+                this.maCombinaison.push(color);
+              } else this.showMyCombinaison = false;
+              if (this.counter == 4) this.isReady = true;
+            } else if (this.gameStarted) {
+              if (this.tour["color"].length == 0) this.tour["color"].push([]);
+              else if (
+                this.tour["color"][this.tour["color"].length - 1] == 0 ||
+                this.tour["color"][this.tour["color"].length - 1].length == 4
+              )
+                this.tour["color"].push([]);
+              this.tour["color"][this.tour["color"].length - 1].push(color);
+              if (
+                this.tour["color"][this.tour["color"].length - 1].length == 4
+              ) {
+                this.tour["good"].push(0);
+                this.tour["wrong"].push(0);
+                for (
+                  let index = 0;
+                  index < this.maCombinaison.length;
+                  index++
+                ) {
+                  if (
+                    this.maCombinaison[index] ==
+                    this.tour["color"][this.tour["color"].length - 1][index]
+                  )
+                    this.tour["good"][this.tour["good"].length - 1]++;
+                  else this.tour["wrong"][this.tour["wrong"].length - 1]++;
+                }
+                if (this.tour["good"][this.tour["good"].length - 1] == 4)
+                  this.winned = true;
+                else this.tour["numTour"]++;
+              }
+            }
+          }
+        },
+        start: function () {
+          this.showMyCombinaison = false;
+          this.isReady = false;
+          this.gameStarted = true;
+        },
+      },
+    });
+  </script>
+</html>
